@@ -4,10 +4,255 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Three Aliens</title>
+
+    <script src="./js/three.js"> </script>
+    <script src="./js/SceneUtils.js"></script>
+    <script src="./js/OrbitControls.js"></script>
 </head>
 <body>
+    <!-- <script type="module" src="/aliens.js"></script> -->
     <script>
-        // our aliens code!
+        // global variables    
+        // Note: enabling orbit controls interferes with camera setup    
+        var enableOrbitControls = false;
+
+        var alienParams = {
+            bodyHeight: 35,
+            bodyRadius: 15,
+            bodyScaleY: 1.3,
+            headHeight: 15,
+            headRadius: 20,
+            armLength: 10,
+            footRadius: 5
+        };
+
+        // camera params to determine camera view setup
+        var cameraParams = {
+            near: 1,
+            far: 250,
+            fov: 75,                // degrees
+            aspectRatio: 700 / 500, 
+            atX: 0, //0
+            atY: 0, //0
+            atZ: 0, //0
+            eyeX: 30, //30
+            eyeY: 50, //50
+            eyeZ: -75, //-75
+            upX: 0,
+            upY: 1,
+            upZ: 0
+        };
+                
+        // Dictionary for materials
+        // Access variableName.keyName or variableName["keyName"]
+        var alienMaterials = {
+            alienSkin: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xB9FF66), // lime green
+                side: THREE.DoubleSide,
+                shininess: 35,
+                specular: new THREE.Color("white")
+            }),
+            alienBlueSuit: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0x3383C7), // medium blue
+                side: THREE.DoubleSide,
+                shininess: 35,
+                specular: new THREE.Color("white")
+            }),
+            alienShoes: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0x182A55), // darker blue
+                side: THREE.DoubleSide,
+                shininess: 35,
+                specular: new THREE.Color("white")
+            }),
+            ground: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xb01105), // deep red  
+                specular: new THREE.Color("white"),
+                side: THREE.DoubleSide
+            })
+        };
+
+        function setupCamera(cameraParameters) {
+            // Set up an abbreviation 
+            var cp = cameraParameters;
+            // Create an initial camera with the desired shape
+            var camera = new THREE.PerspectiveCamera(cp.fov, cp.aspectRatio, cp.near, cp.far);
+            // Set the camera location and orientation
+            camera.position.set(cp.eyeX, cp.eyeY, cp.eyeZ);
+            camera.up.set(cp.upX, cp.upY, cp.upZ);
+            camera.lookAt(new THREE.Vector3(cp.atX, cp.atY, cp.atZ));
+            return camera;
+        }
+
+        function updateCamera() {
+            scene.remove(camera);
+            camera = setupCamera(cameraParams);
+            scene.add(camera)
+
+            if (enableOrbitControls) {
+                cameraControls = new THREE.OrbitControls(camera, canvas);
+                setupCameraControls(cameraControls);
+            }
+            render();
+        }
+
+        function render() {
+            // A render function; assume global variables scene, renderer, and camera
+            renderer.render(scene, camera);
+        }
+
+        function setupCameraControls(cameraControls) {
+            cameraControls.addEventListener('change', render);
+            cameraControls.update();
+        }
+
+        // Create an initial empty Scene
+        var scene = new THREE.Scene();
+
+        // Create a renderer to render the scene
+        var renderer = new THREE.WebGLRenderer();
+
+        // Adds the canvas to the document,                
+        var canvas = renderer.domElement;
+        var parent = document.body;
+        parent.appendChild(canvas);
+        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setClearColor(new THREE.Color(0x2f2f2f), 1);
+
+        // Set up a camera for the scene
+        var camera = setupCamera(cameraParams);
+        scene.add(camera);
+
+        // Set up orbit controls and enable if we want
+        var cameraControls = new THREE.OrbitControls(camera, canvas);
+        if (enableOrbitControls) { //only configure if we enable it
+            //set up camera controls so we can use mouse to pan around scene
+            setupCameraControls(cameraControls);
+        }
+
+        // Add AxisHelper to scene
+        var ah = new THREE.AxesHelper(50);
+        scene.add(ah);
+
+        // Add a ground to the scene
+        var ground = new THREE.Mesh(new THREE.PlaneGeometry(150, 200), alienMaterials.ground);
+        ground.translateZ(-49)
+        ground.translateY(-5 + 0.02);
+        ground.rotateX(THREE.Math.degToRad(90));
+        scene.add(ground);
+
+        // ambient light source  
+        var ambLight = new THREE.AmbientLight(0xcccccc); // soft white light 
+        scene.add(ambLight);      
+
+        // less ocncentrated sunlight
+        var sunlight = new THREE.DirectionalLight(0xffffff, 0.2); // white, low intensity
+        sunlight.position.set(0,100,0);
+        scene.add(sunlight);
+
+        // creating alien
+        var alien = createAlien();
+        scene.add(alien);
+
+        render();
+
+        function createHead() {
+            var head = new THREE.Object3D();
+
+            return head;
+        }
+
+        function createArm() {
+            /* creates and returns an Object with the center at the shoulder 
+            and the negative Y axis running down the center */
+            var arm = new THREE.Object3D();
+            var len = alienParams.armLength;
+            
+            var armGeom = new THREE.CylinderGeometry(5, 5, len, 10);
+            var armMesh = new THREE.Mesh(armGeom, alienMaterials.alienBlueSuit);
+            armMesh.position.y = - len / 2;
+
+            var armHandGeom = new THREE.SphereGeometry(6);
+            var armHandMesh = new THREE.Mesh(armHandGeom, alienMaterials.alienSkin);
+            armHandMesh.position.y = -len;
+
+            arm.add(armMesh);
+            arm.add(armHandMesh);
+            return arm;
+        }
+
+        function addArm(alien, side) {
+            // adds an arm to the alien on the right (side=1) or left (side=-1)
+            var arm = createArm();
+            var radius = alienParams.bodyRadius;
+            var scale = alienParams.bodyScaleY;
+            var sx = radius * 0.75;
+            var sy = scale * radius * 0.7;
+            arm.position.set(side * sx, sy, 0);
+            arm.rotation.z = side * Math.PI / 4;
+            alien.add(arm);
+        }
+
+        function createFoot() {
+            var foot = new THREE.Object3D();
+            var len = alienParams.footRadius;
+            
+            var footGeom = new THREE.SphereGeometry(len);
+            var footMesh = new THREE.Mesh(footGeom, alienMaterials.alienShoes);
+            footMesh.position.y = - len;
+
+            foot.add(footMesh);
+            return foot;
+        }
+
+        function addFoot(alien, side) {
+            // adds an foot to the alien on the right (side=1) or left (side=-1)
+            var foot = createFoot();
+            var radius = alienParams.bodyRadius;
+            var scale = alienParams.bodyScaleY;
+            var hx = side * 2;
+            var hy = radius * scale;
+            foot.position.set(hx, hy, 0);
+            alien.add(foot);
+        }
+
+        function createAlienBody() {
+            // creates and returns body Object for alien
+            // (x, z) is plane, y is height
+            var body = new THREE.Object3D();
+            var radius = alienParams.bodyRadius;
+            var bodyGeom = new THREE.SphereGeometry(radius, 20, 20);
+            var bodyMesh = new THREE.Mesh(bodyGeom, alienMaterials.alienBlueSuit);
+            bodyMesh.scale.y = alienParams.bodyScaleY;
+            body.add(bodyMesh);
+            addArm(body, 1); // add right arm
+            addArm(body, -1); // add left arm
+            addFoot(body, 1); // add right foot
+            addFoot(body, -1); // add left foot
+            return body;
+        }
+
+        function createAlien() {
+            // creates and returns an alien object
+            var alien = new THREE.Object3D();
+            var body = createAlienBody();
+            alien.add(body);
+            var head = createHead();
+            var bs = alienParams.bodyScaleY;
+            var br = alienParams.bodyRadius;
+            var hr = alienParams.headRadius;
+
+            // calculate position for the center of the head
+            head.position.y = bs * br + hr - 0.5; // moving head down a bit to connect with body more
+
+            // calculate the total height from the feet to middle of body
+            var height = br * bs;
+
+            // move the whole alien up by the total height to set feet as the origin
+            alien.position.y = height;  // shifting clown up so feet are at the origin
+
+            alien.add(head);
+            return alien;
+        }
     </script>
 </body>
 </html>
