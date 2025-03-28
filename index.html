@@ -14,15 +14,14 @@
     <script>
         // global variables    
         // Note: enabling orbit controls interferes with camera setup    
-        var enableOrbitControls = false;
+        var enableOrbitControls = true;
 
         var alienParams = {
-            bodyHeight: 35,
             bodyRadius: 15,
             bodyScaleY: 1.3,
-            headHeight: 15,
+            headScaleY: 0.5,
             headRadius: 20,
-            armLength: 10,
+            armLength: 15,
             footRadius: 5
         };
 
@@ -31,7 +30,7 @@
             near: 1,
             far: 250,
             fov: 75,                // degrees
-            aspectRatio: 700 / 500, 
+            aspectRatio: window.innerWidth / window.innerHeight, 
             atX: 0, //0
             atY: 0, //0
             atZ: 0, //0
@@ -115,7 +114,7 @@
         var canvas = renderer.domElement;
         var parent = document.body;
         parent.appendChild(canvas);
-        renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+        renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(new THREE.Color(0x2f2f2f), 1);
 
         // Set up a camera for the scene
@@ -167,11 +166,11 @@
             var arm = new THREE.Object3D();
             var len = alienParams.armLength;
             
-            var armGeom = new THREE.CylinderGeometry(5, 5, len, 10);
+            var armGeom = new THREE.CylinderGeometry(4, 4, len, 10);
             var armMesh = new THREE.Mesh(armGeom, alienMaterials.alienBlueSuit);
             armMesh.position.y = - len / 2;
 
-            var armHandGeom = new THREE.SphereGeometry(6);
+            var armHandGeom = new THREE.SphereGeometry(5);
             var armHandMesh = new THREE.Mesh(armHandGeom, alienMaterials.alienSkin);
             armHandMesh.position.y = -len;
 
@@ -185,10 +184,10 @@
             var arm = createArm();
             var radius = alienParams.bodyRadius;
             var scale = alienParams.bodyScaleY;
-            var sx = radius * 0.75;
-            var sy = scale * radius * 0.7;
+            var sx = radius * 0.65;
+            var sy = scale * radius * 0.5;
             arm.position.set(side * sx, sy, 0);
-            arm.rotation.z = side * Math.PI / 4;
+            arm.rotation.z = side * Math.PI / 3;
             alien.add(arm);
         }
 
@@ -199,6 +198,7 @@
             var footGeom = new THREE.SphereGeometry(len);
             var footMesh = new THREE.Mesh(footGeom, alienMaterials.alienShoes);
             footMesh.position.y = - len;
+            footMesh.scale.x = 1.5;
 
             foot.add(footMesh);
             return foot;
@@ -209,9 +209,10 @@
             var foot = createFoot();
             var radius = alienParams.bodyRadius;
             var scale = alienParams.bodyScaleY;
-            var hx = side * 2;
-            var hy = radius * scale;
+            var hx = side * radius * 0.35;
+            var hy = radius * scale * -0.85;
             foot.position.set(hx, hy, 0);
+            foot.rotation.y = side * Math.PI / 4;
             alien.add(foot);
         }
 
