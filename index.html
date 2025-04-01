@@ -157,10 +157,15 @@
         var ambLight = new THREE.AmbientLight(0xcccccc); // soft white light 
         scene.add(ambLight);      
 
-        // less ocncentrated sunlight
+        // less concentrated sunlight
         var sunlight = new THREE.DirectionalLight(0xffffff, 0.2); // white, low intensity
         sunlight.position.set(0,100,0);
         scene.add(sunlight);
+
+        // spotlight on main alien
+        var spotlight = new THREE.SpotLight(0xffffff, 0.3); // white spotlight, medium intensity
+        spotlight.position.set(0,50,0);
+        scene.add(spotlight); 
 
         // creating alien
         var alien = createAlien();
