@@ -79,6 +79,7 @@
             }),
             ground: new THREE.MeshPhongMaterial({
                 color: new THREE.Color(0xb01105), // deep red  
+                shininess: 10, // turning down light shininess of ground significantly
                 specular: new THREE.Color("white"),
                 side: THREE.DoubleSide
             })
@@ -147,7 +148,7 @@
         scene.add(ah);
 
         // Add a ground to the scene
-        var ground = new THREE.Mesh(new THREE.PlaneGeometry(150, 200), alienMaterials.ground);
+        var ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), alienMaterials.ground);
         ground.translateZ(-49)
         ground.translateY(-5 + 0.02);
         ground.rotateX(THREE.Math.degToRad(90));
@@ -167,9 +168,21 @@
         spotlight.position.set(0,50,0);
         scene.add(spotlight); 
 
-        // creating alien
+        // creating alien (middle)
         var alien = createAlien();
         scene.add(alien);
+
+        // adding another alien (left)
+        var alien2 = createAlien();
+        alien2.position.x = -50;
+        alien2.position.z = -50;
+        scene.add(alien2);
+
+        // adding another alien (right)
+        var alien3 = createAlien();
+        alien3.position.x = 50;
+        alien3.position.z = -50;
+        scene.add(alien3);
 
         render();
 
