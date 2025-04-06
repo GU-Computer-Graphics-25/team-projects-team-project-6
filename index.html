@@ -29,7 +29,9 @@
             antennaBallRadius: 2,
             armLength: 15,
             footRadius: 8,
-            beltWidth: 2
+            beltWidth: 2,
+            earRadius: 5,
+            earLength: 10
         };
 
         // camera params to determine camera view setup
@@ -259,6 +261,18 @@
             var headMesh = new THREE.Mesh(headGeom, alienMaterials.alienSkin);
             headMesh.scale.y = alienParams.headScaleY;
 
+            var earRight = createEar();
+            earRight.rotateY(Math.PI / -1.75)
+            earRight.rotateX(Math.PI / 3);
+            earRight.position.x = -radius;
+            earRight.position.y = radius * alienParams.headScaleY / 2;
+
+            var earLeft = createEar(); head
+            earLeft.rotateY(Math.PI / 1.75)
+            earLeft.rotateX(Math.PI / 3);
+            earLeft.position.x = radius;
+            earLeft.position.y = radius * alienParams.headScaleY / 2;
+
             var antennaLength = alienParams.bodyScaleY * alienParams.bodyRadius / 1.5;
             var antennaRadius = alienParams.antennaRadius;
             var antennaLengthGeom = new THREE.CylinderGeometry(antennaRadius * .3, antennaRadius, antennaLength, 10);
@@ -269,9 +283,11 @@
             var antennaBallMesh = new THREE.Mesh(antennaBallGeom, alienMaterials.alienSkin);
             antennaBallMesh.position.y = antennaLength / 2;
             antennaLengthMesh.add(antennaBallMesh);
-            head.add(antennaLengthMesh);
 
             head.add(headMesh);
+            head.add(antennaLengthMesh);
+            head.add(earRight);
+            head.add(earLeft);
             addEyes(head);
             addMouth(head);
 
@@ -335,6 +351,12 @@
             foot.position.set(hx, hy, .3 * radius);
             foot.rotation.y = side * - Math.PI / 3;
             alien.add(foot);
+        }
+
+        function createEar() {
+            var earGeom = new THREE.ConeGeometry(alienParams.earRadius, alienParams.earLength, 3);
+            var earMesh = new THREE.Mesh(earGeom, alienMaterials.alienSkin);
+            return earMesh;
         }
 
         function createAlienBody() {
