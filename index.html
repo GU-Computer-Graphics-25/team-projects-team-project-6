@@ -28,7 +28,8 @@
             antennaRadius: 2,
             antennaBallRadius: 2,
             armLength: 15,
-            footRadius: 8
+            footRadius: 8,
+            beltWidth: 2
         };
 
         // camera params to determine camera view setup
@@ -341,12 +342,25 @@
             // (x, z) is plane, y is height
             var body = new THREE.Object3D();
             var radius = alienParams.bodyRadius;
+
             var lowerHeight = alienParams.bodyScaleY * radius;
             var bodyTopGeom = new THREE.SphereGeometry(radius, 20, 20);
             var bodyTopMesh = new THREE.Mesh(bodyTopGeom, alienMaterials.alienBlueSuit);
             bodyTopMesh.position.y = lowerHeight / 2;
             var bodyLowerGeom = new THREE.CylinderGeometry(radius, radius * .75, lowerHeight, 20);
             var bodyLowerMesh = new THREE.Mesh(bodyLowerGeom, alienMaterials.alienBlueSuit);
+
+            var beltGeom = new THREE.CylinderGeometry(radius * 1.01, radius, alienParams.beltWidth, 20);
+            var beltMesh = new THREE.Mesh(beltGeom, alienMaterials.alienShoes);
+            beltMesh.position.y = lowerHeight / 2.5;
+            body.add(beltMesh);
+
+            var scarfGeom = new THREE.TorusGeometry(radius * .75, alienParams.beltWidth / 1.5, 10, 20);
+            var scarfMesh = new THREE.Mesh(scarfGeom, alienMaterials.alienShoes);
+            scarfMesh.rotateX(Math.PI / 2)
+            scarfMesh.position.y = (lowerHeight / 2) + (radius / 1.4);
+            body.add(scarfMesh);
+
             body.add(bodyTopMesh);
             body.add(bodyLowerMesh);
             addArm(body, 1); // add right arm
