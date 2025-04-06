@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <script src="./js/SceneUtils.js"></script>
     <script src="./js/OrbitControls.js"></script>
 </head>
+
 <body>
     <!-- <script type="module" src="/aliens.js"></script> -->
     <script>
@@ -24,7 +26,7 @@
             eyeRadius: 2.2,
             mouthRadius: 2,
             armLength: 15,
-            footRadius: 5
+            footRadius: 8
         };
 
         // camera params to determine camera view setup
@@ -32,7 +34,7 @@
             near: 1,
             far: 250,
             fov: 75,                // degrees
-            aspectRatio: window.innerWidth / window.innerHeight, 
+            aspectRatio: window.innerWidth / window.innerHeight,
             atX: 0, //0
             atY: 0, //0
             atZ: 0, //0
@@ -43,7 +45,7 @@
             upY: 1,
             upZ: 0
         };
-                
+
         // Dictionary for materials
         // Access variableName.keyName or variableName["keyName"]
         var alienMaterials = {
@@ -156,17 +158,17 @@
 
         // ambient light source  
         var ambLight = new THREE.AmbientLight(0xcccccc); // soft white light 
-        scene.add(ambLight);      
+        scene.add(ambLight);
 
         // less concentrated sunlight
         var sunlight = new THREE.DirectionalLight(0xffffff, 0.2); // white, low intensity
-        sunlight.position.set(0,100,0);
+        sunlight.position.set(0, 100, 0);
         scene.add(sunlight);
 
         // spotlight on main alien
         var spotlight = new THREE.SpotLight(0xffffff, 0.3); // white spotlight, medium intensity
-        spotlight.position.set(0,50,0);
-        scene.add(spotlight); 
+        spotlight.position.set(0, 50, 0);
+        scene.add(spotlight);
 
         // creating alien (middle)
         var alien = createAlien();
@@ -201,11 +203,11 @@
 
             // creating left, center, then right eye
             var leftEye = createEye();
-            leftEye.position.set(-radius / 2, 0, 0.8*radius);
+            leftEye.position.set(-radius / 2, 0, 0.8 * radius);
             var centerEye = createEye();
-            centerEye.position.set(0, 0, 0.9*radius);  
+            centerEye.position.set(0, 0, 0.9 * radius);
             var rightEye = createEye();
-            rightEye.position.set(radius / 2, 0, 0.8*radius); 
+            rightEye.position.set(radius / 2, 0, 0.8 * radius);
 
             eyeframe.add(leftEye);
             eyeframe.add(centerEye);
@@ -240,7 +242,7 @@
             // rotating mouth on head
             var angle = Math.PI / 22;
             mouthframe.rotation.x = angle;
-            
+
             head.add(mouthframe);
             return head;
         }
@@ -265,7 +267,7 @@
             and the negative Y axis running down the center */
             var arm = new THREE.Object3D();
             var len = alienParams.armLength;
-            
+
             var armGeom = new THREE.CylinderGeometry(4, 4, len, 10);
             var armMesh = new THREE.Mesh(armGeom, alienMaterials.alienBlueSuit);
             armMesh.position.y = - len / 2;
@@ -284,8 +286,8 @@
             var arm = createArm();
             var radius = alienParams.bodyRadius;
             var scale = alienParams.bodyScaleY;
-            var sx = radius * 0.65;
-            var sy = scale * radius * 0.5;
+            var sx = radius * 0.75;
+            var sy = scale * radius * 0.7;
             arm.position.set(side * sx, sy, 0);
             arm.rotation.z = side * Math.PI / 3;
             alien.add(arm);
@@ -296,7 +298,7 @@
             the foot*/
             var foot = new THREE.Object3D();
             var len = alienParams.footRadius;
-            
+
             var footGeom = new THREE.SphereGeometry(len);
             var footMesh = new THREE.Mesh(footGeom, alienMaterials.alienShoes);
             footMesh.position.y = - len;
@@ -311,11 +313,11 @@
             and angled the foot to be angled forward (positive z direction)*/
             var foot = createFoot();
             var radius = alienParams.bodyRadius;
-            var scale = alienParams.bodyScaleY;
-            var hx = side * radius * 0.35;
-            var hy = radius * scale * -0.74;
-            foot.position.set(hx, hy, 0);
-            foot.rotation.y = side * - Math.PI / 4;
+            var scale = alienParams.bodyScaleY * 2.5;
+            var hx = side * radius * 0.55;
+            var hy = radius * scale * -0.1
+            foot.position.set(hx, hy, .3 * radius);
+            foot.rotation.y = side * - Math.PI / 3;
             alien.add(foot);
         }
 
@@ -324,10 +326,14 @@
             // (x, z) is plane, y is height
             var body = new THREE.Object3D();
             var radius = alienParams.bodyRadius;
-            var bodyGeom = new THREE.SphereGeometry(radius, 20, 20);
-            var bodyMesh = new THREE.Mesh(bodyGeom, alienMaterials.alienBlueSuit);
-            bodyMesh.scale.y = alienParams.bodyScaleY;
-            body.add(bodyMesh);
+            var lowerHeight = alienParams.bodyScaleY * radius;
+            var bodyTopGeom = new THREE.SphereGeometry(radius, 20, 20);
+            var bodyTopMesh = new THREE.Mesh(bodyTopGeom, alienMaterials.alienBlueSuit);
+            bodyTopMesh.position.y = lowerHeight / 2;
+            var bodyLowerGeom = new THREE.CylinderGeometry(radius, radius * .75, lowerHeight, 20);
+            var bodyLowerMesh = new THREE.Mesh(bodyLowerGeom, alienMaterials.alienBlueSuit);
+            body.add(bodyTopMesh);
+            body.add(bodyLowerMesh);
             addArm(body, 1); // add right arm
             addArm(body, -1); // add left arm
             addFoot(body, 1); // add right foot
@@ -338,7 +344,9 @@
         function createAlien() {
             // creates and returns an alien object
             var alien = new THREE.Object3D();
+            var bodyShift = -alienParams.bodyScaleY * alienParams.bodyRadius / 1.5;
             var body = createAlienBody();
+            body.position.y = bodyShift;
             alien.add(body);
             var head = createHead();
             var bs = alienParams.bodyScaleY;
@@ -347,7 +355,7 @@
             var hs = alienParams.headScaleY;
 
             // calculate position for the center of the head
-            head.position.y = bs * br + hs * hr - 1; // moving head down to make neck shorter
+            head.position.y = bs * br + hs * hr + bodyShift; // moving head down to make neck shorter
 
             // calculate the total height from the feet to middle of body
             var height = br * bs;
@@ -360,4 +368,5 @@
         }
     </script>
 </body>
+
 </html>
