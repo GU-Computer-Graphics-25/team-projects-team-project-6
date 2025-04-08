@@ -60,11 +60,8 @@
                 shininess: 35,
                 specular: new THREE.Color("white")
             }),
-            alienBlueSuit: new THREE.MeshPhongMaterial({
+            alienBlueSuit: new THREE.MeshLambertMaterial({
                 color: new THREE.Color(0x3383C7), // medium blue
-                side: THREE.DoubleSide,
-                shininess: 35,
-                specular: new THREE.Color("white")
             }),
             alienShoes: new THREE.MeshPhongMaterial({
                 color: new THREE.Color(0x182A55), // darker blue
@@ -417,6 +414,117 @@
             alien.add(head);
             return alien;
         }
+
+        function createSpaceship() {
+
+        }
+
+        //*** Custom geometry helper functions ***//
+
+        // factorial
+        function factorial(n) {
+            let total = 1;
+            for (let i = 1; i <= n; i++) {
+                total *= i;
+            }
+            return total;
+        }
+
+        // choose
+        function choose(n, k) {
+            if (k == 0) return 1;
+            return factorial(n) / (factorial(n - k) * factorial(k));
+        }
+
+        function calcBezier(pArr, resolution) {
+            // Derived from B(t) = ⅀ n,i=0 ((n choose i) * (i - t)^(n-i) * t^(i) P[i]), e.g. where n = 4
+            // B(t) =  (1 - t)^4*P[0] + 4*(1 - t)^3*t*P[1] + 6*(1 - t)^2*t^2*P[2] + 4*(1 - t)*t^3*P[3] + t^4*P[3]
+
+            let interpArr = [];
+            let delta = 1 / (resolution - 1);
+            for (let t = 0.0; t <= 1; t += delta) {
+                let t_x = 0.0;
+                let t_y = 0.0;
+                let t_z = 0.0;
+
+                for (let i = 0; i < pArr.length; i++) {
+                    let n = pArr.length - 1;
+                    let c = choose(n, i) * ((1 - t) ** (n - i)) * (t ** i);
+                    t_x += c * pArr[i][0];
+                    t_y += c * pArr[i][1];
+                    t_z += c * pArr[i][2];
+
+                }
+                interpArr.push([t_x, t_y, t_z]);
+            }
+            return interpArr;
+        }
+
+        function rotateAroundYAxis(theta, pArr) {
+            let newArr = [];
+            pArr.forEach(p => {
+                let r = Math.sqrt(p[0] * p[0] + p[2] * p[2])
+                newArr.push([r * Math.cos(theta),
+                p[1],
+                r * Math.sin(theta)]);
+            });
+            return newArr
+        }
+
+
+        function shiftAroundYZPlane(theta, r, pArr) {
+            let newArr = [];
+            pArr.forEach(p => {
+                newArr.push([p[0],
+                p[1] + (r * Math.sin(theta)),
+                p[2] + (r * Math.cos(theta))]);
+            });
+            return newArr
+        }
+
+        function creategeom(pointArr, iters) {
+            var geom = new THREE.Geometry();
+
+            var bezier = calcBezier(pointArr, iters);
+
+            // add body verteces
+            for (let i = 0; i < iters * 4; i++) {
+                let theta = Math.PI * i / (iters * 2);
+                let rotated = rotateAroundYAxis(theta, bezier);
+                rotated.forEach(p => {
+                    geom.vertices.push(new THREE.Vector3(p[0], p[1], p[2]));
+                });
+            }
+
+            // faces
+            //
+            //  i-iters_<____i
+            //  |        /   |
+            //  v     /     ^
+            //  | /         |
+            //  i-iters+1_>_i+1
+
+            // set seam faces
+            for (let i = 0; i < iters - 1; i++) {
+                let lastRow = (iters * iters * 4) - iters + i;
+                geom.faces.push(new THREE.Face3(lastRow + 1, lastRow, i));
+                geom.faces.push(new THREE.Face3(i + 1, lastRow + 1, i));
+            }
+
+            // set rest of faces
+            for (let j = 1; j < iters * 4; j++) {
+                let row = j * iters;
+                for (let i = 0; i < iters - 1; i++) {
+                    let ind = row + i;
+                    geom.faces.push(new THREE.Face3(ind - iters + 1, ind - iters, ind));
+                    geom.faces.push(new THREE.Face3(ind + 1, ind - iters + 1, ind));
+                }
+            }
+
+            geom.computeVertexNormals();
+            return geom;
+        }
+
     </script>
 </body>
 
