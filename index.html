@@ -34,6 +34,10 @@
             earLength: 10
         };
 
+        var shipParams = {
+            height: 100
+        }
+
         // camera params to determine camera view setup
         var cameraParams = {
             near: 1,
@@ -187,6 +191,9 @@
         alien3.position.x = 50;
         alien3.position.z = -50;
         scene.add(alien3);
+
+        var ship = createSpaceship();
+        scene.add(ship);
 
         render();
 
@@ -416,7 +423,24 @@
         }
 
         function createSpaceship() {
+            var pointArr = [[5, 0, 0], [13, 8, 0], [13, 30, 0], [0, 40, 0]];
+            var shipScale = shipParams.height / 40;
+            var resolution = 9;
+            var polarResolution = resolution * 4;
 
+            var ship = new THREE.Object3D();
+            var shipBodyGeom = creategeom(pointArr, 9);
+            shipBodyGeom.scale(shipScale, shipScale, shipScale);
+
+            var wireMat = new THREE.MeshBasicMaterial(
+                {
+                    wireframe: true
+                });
+
+            var shipBody = new THREE.Mesh(shipBodyGeom, wireMat);
+            ship.add(shipBody);
+
+            return ship;
         }
 
         //*** Custom geometry helper functions ***//
@@ -471,7 +495,6 @@
             return newArr
         }
 
-
         function shiftAroundYZPlane(theta, r, pArr) {
             let newArr = [];
             pArr.forEach(p => {
@@ -522,6 +545,7 @@
             }
 
             geom.computeVertexNormals();
+            geom.scale(- 1, 1, 1);
             return geom;
         }
 
