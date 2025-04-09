@@ -16,7 +16,7 @@
     <script>
         // global variables    
         // Note: enabling orbit controls interferes with camera setup    
-        var enableOrbitControls = true;
+        var enableOrbitControls = false;
 
         var groundHeight = -5 + 0.02;
 
@@ -46,12 +46,12 @@
             far: 250,
             fov: 75,                // degrees
             aspectRatio: window.innerWidth / window.innerHeight,
-            atX: 0, //0
-            atY: 0, //0
-            atZ: 0, //0
-            eyeX: 30, //30
-            eyeY: 50, //50
-            eyeZ: 75, //-75
+            atX: 0, 
+            atY: 0, 
+            atZ: 0, 
+            eyeX: 0,
+            eyeY: 50,
+            eyeZ: 120,
             upX: 0,
             upY: 1,
             upZ: 0
@@ -193,8 +193,8 @@
         }
 
         // Add AxisHelper to scene
-        var ah = new THREE.AxesHelper(50);
-        scene.add(ah);
+        // var ah = new THREE.AxesHelper(50);
+        // scene.add(ah);
 
         // Add a ground to the scene
         var ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), alienMaterials.ground);
