@@ -12,6 +12,21 @@
 </head>
 
 <body>
+    <div id="instructions" style="
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        color: white;
+        background-color: rgba(0, 0, 0, 0.6);
+        padding: 10px;
+        font-family: sans-serif;
+        font-size: 14px;
+        border-radius: 4px;
+        z-index: 1;">
+        Press <strong>G</strong> to start block animation<br>
+        Press <strong>S</strong> to stop it
+    </div>
+
     <!-- <script type="module" src="/aliens.js"></script> -->
     <script>
         // global variables    
@@ -21,6 +36,7 @@
         var groundHeight = -5 + 0.02;
 
         var blockSize = 20;
+        var animationId; // used later for animation
 
         var alienParams = {
             bodyRadius: 15,
@@ -270,16 +286,18 @@
         // adding and positioning toy blocks in scene
         // left side blocks
         var toyBlocksL = createToyBlocks();
-        toyBlocksL.position.z = 80;
-        toyBlocksL.position.y = groundHeight;
-        toyBlocksL.position.x = -100;
-        scene.add(toyBlocksL);
+        var toyBlocksLObj = toyBlocksL.object;
+        toyBlocksLObj.position.z = 80;
+        toyBlocksLObj.position.y = groundHeight;
+        toyBlocksLObj.position.x = -100;
+        scene.add(toyBlocksLObj); // adding left toy blocks object to the scene
         // right side blocks
         var toyBlocksR = createToyBlocks();
-        toyBlocksR.position.z = 80;
-        toyBlocksR.position.y = groundHeight;
-        toyBlocksR.position.x = 100;
-        scene.add(toyBlocksR);
+        var toyBlocksRObj = toyBlocksR.object;
+        toyBlocksRObj.position.z = 80;
+        toyBlocksRObj.position.y = groundHeight;
+        toyBlocksRObj.position.x = 100;
+        scene.add(toyBlocksRObj); // adding right toy blocks object to the scene
 
         // rendering the scene!
         render();
@@ -677,7 +695,8 @@
         }
 
         function createToyBlocks() {
-            // creates and returns three positioned wooden toy blocks
+            /* creates and returns dictionary with the group (object of three positioned wooden toy blocks)
+            and array (containing each of the blocks so they can be animated individually) */
             var toyBlocks = new THREE.Object3D();
             // first (bottom left) block -> Z
             var block1 = createBlock(blockMaterials.zblock);
@@ -699,8 +718,60 @@
             block3.rotation.y = Math.PI/8; // slightly rotating block to style/dimension
             toyBlocks.add(block3);
             
-            return toyBlocks;
+            return {object: toyBlocks, blocks: [block1, block2, block3]};
         }
+
+        var animationId = null;
+
+        function animateBlocks() {
+            // animating the blocks so they rotate in place!
+            // prevents stacking by exiting if an animation is already running
+            if (animationId !== null) return;
+
+            function step() {
+                // animating the left side blocks
+                var b1 = toyBlocksL.blocks[0];
+                var b2 = toyBlocksL.blocks[1];
+                var b3 = toyBlocksL.blocks[2];
+
+                if (b1) b1.rotation.y += 0.01;
+                if (b2) b2.rotation.y += 0.015;
+                if (b3) b3.rotation.y += 0.02;
+
+                // animating the right side blocks
+                var b4 = toyBlocksR.blocks[0];
+                var b5 = toyBlocksR.blocks[1];
+                var b6 = toyBlocksR.blocks[2];
+
+                if (b4) b4.rotation.y -= 0.01;
+                if (b5) b5.rotation.y -= 0.015;
+                if (b6) b6.rotation.y -= 0.02;
+
+                render();
+
+                animationId = requestAnimationFrame(step);
+            }
+
+            // Kick off the animation loop
+            animationId = requestAnimationFrame(step);
+        }
+
+
+        function stopBlocksAnimation() {
+            // stops the rotation animation of the blocks
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        // g => starts the rotation of the blocks!!!
+        // s => stops the rotation of the blocks!!!
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "g") animateBlocks();
+            if (event.key === "s") stopBlocksAnimation();
+        });
+
 
     </script>
 </body>
