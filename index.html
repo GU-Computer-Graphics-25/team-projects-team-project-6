@@ -16,7 +16,7 @@
     <script>
         // global variables    
         // Note: enabling orbit controls interferes with camera setup    
-        var enableOrbitControls = true;
+        var enableOrbitControls = false;
 
         var groundHeight = -5 + 0.02;
 
@@ -45,15 +45,15 @@
         // camera params to determine camera view setup
         var cameraParams = {
             near: 1,
-            far: 250,
+            far: 400,
             fov: 75,                // degrees
             aspectRatio: window.innerWidth / window.innerHeight,
             atX: 0, 
             atY: 0, 
             atZ: 0, 
-            eyeX: 45,
+            eyeX: 35,
             eyeY: 75,
-            eyeZ: 120,
+            eyeZ: 165,
             upX: 0,
             upY: 1,
             upZ: 0
@@ -268,11 +268,18 @@
         scene.add(ship);
 
         // adding and positioning toy blocks in scene
-        var toyBlocks = createToyBlocks();
-        toyBlocks.position.z = 80;
-        toyBlocks.position.y = groundHeight;
-        toyBlocks.position.x = -100;
-        scene.add(toyBlocks);
+        // left side blocks
+        var toyBlocksL = createToyBlocks();
+        toyBlocksL.position.z = 80;
+        toyBlocksL.position.y = groundHeight;
+        toyBlocksL.position.x = -100;
+        scene.add(toyBlocksL);
+        // right side blocks
+        var toyBlocksR = createToyBlocks();
+        toyBlocksR.position.z = 80;
+        toyBlocksR.position.y = groundHeight;
+        toyBlocksR.position.x = 100;
+        scene.add(toyBlocksR);
 
         // rendering the scene!
         render();
