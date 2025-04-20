@@ -16,9 +16,11 @@
     <script>
         // global variables    
         // Note: enabling orbit controls interferes with camera setup    
-        var enableOrbitControls = false;
+        var enableOrbitControls = true;
 
         var groundHeight = -5 + 0.02;
+
+        var blockSize = 20;
 
         var alienParams = {
             bodyRadius: 15,
@@ -134,6 +136,26 @@
             })
         };
 
+        // create a TextureLoader for loading wood image file
+        var loader = new THREE.TextureLoader();
+        var textures = [loader.load("z-wood-block.jpg"), loader.load("a-wood-block.jpg"), loader.load("g-wood-block.jpg")];
+
+        // materials array
+        var blockMaterials = {
+            zblock: new THREE.MeshBasicMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: textures[0]
+            }), 
+            ablock: new THREE.MeshBasicMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: textures[1]
+            }),
+            gblock: new THREE.MeshBasicMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: textures[2]
+            })
+        };
+
         function setupCamera(cameraParameters) {
             // function to create and set up a Three.js camera
             // Set up an abbreviation 
@@ -242,6 +264,13 @@
         ship.position.y = -2.5;
         ship.rotateY(-Math.PI / 6);
         scene.add(ship);
+
+        // adding and positioning toy blocks in scene
+        var toyBlocks = createToyBlocks();
+        toyBlocks.position.z = 80;
+        toyBlocks.position.y = groundHeight;
+        toyBlocks.position.x = -100;
+        scene.add(toyBlocks);
 
         // rendering the scene!
         render();
@@ -631,8 +660,21 @@
             return geom;
         }
 
+        function createBlock() {
+            // creates and returns mesh for one toy cube block
+            var blockGeom = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
+            var blockMesh = new THREE.Mesh(blockGeom, blockMaterials.zblock);
+            return blockMesh;
+        }
+
         function createToyBlocks() {
-            // creates and returns wooden toy blocks
+            // creates and returns three positioned wooden toy blocks
+            var toyBlocks = new THREE.Object3D();
+            // first block
+            var block1 = createBlock();
+            block1.position.y = blockSize/2; // because origin of box is in center
+            toyBlocks.add(block1);
+            
             return toyBlocks;
         }
 
