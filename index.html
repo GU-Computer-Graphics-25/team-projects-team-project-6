@@ -136,11 +136,13 @@
             })
         };
 
-        // create a TextureLoader for loading wood image file
+        // loading textured materials for block
         var loader = new THREE.TextureLoader();
-        var textures = [loader.load("z-wood-block.jpg"), loader.load("a-wood-block.jpg"), loader.load("g-wood-block.jpg")];
+        var textures = [];
+        textures[0] = loader.load("z-wood-block.jpg", () => render());
+        textures[1] = loader.load("a-wood-block.jpg", () => render());
+        textures[2] = loader.load("g-wood-block.jpg", () => render());
 
-        // materials array
         var blockMaterials = {
             zblock: new THREE.MeshBasicMaterial({
                 color: new THREE.Color(0xffffff), // white
@@ -660,20 +662,35 @@
             return geom;
         }
 
-        function createBlock() {
+        function createBlock(material) {
             // creates and returns mesh for one toy cube block
             var blockGeom = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-            var blockMesh = new THREE.Mesh(blockGeom, blockMaterials.zblock);
+            var blockMesh = new THREE.Mesh(blockGeom, material);
             return blockMesh;
         }
 
         function createToyBlocks() {
             // creates and returns three positioned wooden toy blocks
             var toyBlocks = new THREE.Object3D();
-            // first block
-            var block1 = createBlock();
+            // first (bottom left) block -> Z
+            var block1 = createBlock(blockMaterials.zblock);
             block1.position.y = blockSize/2; // because origin of box is in center
+            block1.rotation.y = -Math.PI/12; // slightly rotating block to style/dimension
             toyBlocks.add(block1);
+
+            // second (top) block -> A
+            var block2 = createBlock(blockMaterials.ablock);
+            block2.position.y = blockSize/2 + blockSize; // because putting on top of first block
+            block2.position.x = blockSize/2 + 2.5; // because placing block in middle of bottom blocks
+            block2.rotation.y = Math.PI/4; // rotating top block 45 degrees
+            toyBlocks.add(block2);
+
+            // third (bottom right) block -> G
+            var block3 = createBlock(blockMaterials.gblock);
+            block3.position.y = blockSize/2; // because origin of box is in center
+            block3.position.x = blockSize + 5; //because placing block to right of first block + little space
+            block3.rotation.y = Math.PI/8; // slightly rotating block to style/dimension
+            toyBlocks.add(block3);
             
             return toyBlocks;
         }
