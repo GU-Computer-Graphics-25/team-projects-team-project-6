@@ -135,6 +135,7 @@
         };
 
         function setupCamera(cameraParameters) {
+            // function to create and set up a Three.js camera
             // Set up an abbreviation 
             var cp = cameraParameters;
             // Create an initial camera with the desired shape
@@ -147,6 +148,7 @@
         }
 
         function updateCamera() {
+            // function to update the camera by removing and re-adding
             scene.remove(camera);
             camera = setupCamera(cameraParams);
             scene.add(camera)
@@ -159,44 +161,45 @@
         }
 
         function render() {
-            // A render function; assume global variables scene, renderer, and camera
+            // render function; assume global variables scene, renderer, and camera
             renderer.render(scene, camera);
         }
 
         function setupCameraControls(cameraControls) {
+            // function to set up camera controls for the scene
             cameraControls.addEventListener('change', render);
             cameraControls.update();
         }
 
-        // Create an initial empty Scene
+        // create an initial empty Scene
         var scene = new THREE.Scene();
 
-        // Create a renderer to render the scene
+        // create a renderer to render the scene
         var renderer = new THREE.WebGLRenderer();
 
-        // Adds the canvas to the document,                
+        // adds the canvas to the document,                
         var canvas = renderer.domElement;
         var parent = document.body;
         parent.appendChild(canvas);
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setClearColor(new THREE.Color(0x2f2f2f), 1);
 
-        // Set up a camera for the scene
+        // set up a camera for the scene
         var camera = setupCamera(cameraParams);
         scene.add(camera);
 
-        // Set up orbit controls and enable if we want
+        // set up orbit controls and enable if we want
         var cameraControls = new THREE.OrbitControls(camera, canvas);
         if (enableOrbitControls) { //only configure if we enable it
             //set up camera controls so we can use mouse to pan around scene
             setupCameraControls(cameraControls);
         }
 
-        // Add AxisHelper to scene
+        // add AxisHelper to scene
         // var ah = new THREE.AxesHelper(50);
         // scene.add(ah);
 
-        // Add a ground to the scene
+        // add a ground to the scene
         var ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), alienMaterials.ground);
         ground.translateZ(-49)
         ground.translateY(groundHeight);
@@ -233,12 +236,14 @@
         alien3.position.z = -50;
         scene.add(alien3);
 
+        // adding a spaceship behind the aliens
         var ship = createSpaceship();
         ship.position.z = -75;
         ship.position.y = -2.5;
         ship.rotateY(-Math.PI / 6);
         scene.add(ship);
 
+        // rendering the scene!
         render();
 
         function createEye() {
@@ -402,14 +407,15 @@
         }
 
         function createEar() {
+            // creates an alien ear and returns the ear's mesh
             var earGeom = new THREE.ConeGeometry(alienParams.earRadius, alienParams.earLength, 3);
             var earMesh = new THREE.Mesh(earGeom, alienMaterials.alienSkin);
             return earMesh;
         }
 
         function createAlienBody() {
-            // creates and returns body Object for alien
-            // (x, z) is plane, y is height
+            // creates and returns body object for alien
+            // note: (x, z) is plane, y is height
             var body = new THREE.Object3D();
             var radius = alienParams.bodyRadius;
 
@@ -467,6 +473,7 @@
         }
 
         function createSpaceship() {
+            // creates and returns a spaceship custom geometry object
             var pointArr = [[5, 0, 0], [13, 8, 0], [13, 30, 0], [0, 40, 0]];
             var shipScale = shipParams.height / 40;
             var resolution = 9;
@@ -517,8 +524,8 @@
 
         //*** Custom geometry helper functions ***//
 
-        // factorial
         function factorial(n) {
+            // factorial
             let total = 1;
             for (let i = 1; i <= n; i++) {
                 total *= i;
@@ -526,8 +533,8 @@
             return total;
         }
 
-        // choose
         function choose(n, k) {
+            // choose
             if (k == 0) return 1;
             return factorial(n) / (factorial(n - k) * factorial(k));
         }
@@ -557,6 +564,7 @@
         }
 
         function rotateAroundYAxis(theta, pArr) {
+            // rotates pArr around the y axis theta degrees
             let newArr = [];
             pArr.forEach(p => {
                 let r = Math.sqrt(p[0] * p[0] + p[2] * p[2])
@@ -568,6 +576,7 @@
         }
 
         function shiftAroundYZPlane(theta, r, pArr) {
+            // shifts pArr around the yz plane using theta and r (polar coordinates)
             let newArr = [];
             pArr.forEach(p => {
                 newArr.push([p[0],
@@ -578,6 +587,7 @@
         }
 
         function creategeom(pointArr, iters) {
+            // creates a geometry using the provided points and iterations
             var geom = new THREE.Geometry();
 
             var bezier = calcBezier(pointArr, iters);
@@ -619,6 +629,11 @@
             geom.computeFaceNormals();
             geom.computeVertexNormals();
             return geom;
+        }
+
+        function createToyBlocks() {
+            // creates and returns wooden toy blocks
+            return toyBlocks;
         }
 
     </script>
