@@ -58,15 +58,28 @@
             height: 100
         }
 
+        var mobileParams = {
+            radiusNorth: 15,
+            radiusSouth: 20,
+            radiusEast: 30,
+            radiusWest: 35,
+            lengthNorth: 65,
+            lengthSouth: 45,
+            lengthEast: 50,
+            lengthWest: 40,
+            mobileWidth: 200,
+            mobileHeight: 150
+        }
+
         // camera params to determine camera view setup
         var cameraParams = {
             near: 1,
             far: 400,
             fov: 75,                // degrees
             aspectRatio: window.innerWidth / window.innerHeight,
-            atX: 0, 
-            atY: 0, 
-            atZ: 0, 
+            atX: 0,
+            atY: 0,
+            atZ: 0,
             eyeX: 35,
             eyeY: 75,
             eyeZ: 165,
@@ -152,26 +165,63 @@
             })
         };
 
-        // loading textured materials for block
+        // loading textured materials for block and mobile
         var loader = new THREE.TextureLoader();
-        var textures = [];
-        textures[0] = loader.load("z-wood-block.jpg", () => render());
-        textures[1] = loader.load("a-wood-block.jpg", () => render());
-        textures[2] = loader.load("g-wood-block.jpg", () => render());
+        var blockTextures = [];
+        blockTextures[0] = loader.load("textures/z-wood-block.jpg", () => render());
+        blockTextures[1] = loader.load("textures/a-wood-block.jpg", () => render());
+        blockTextures[2] = loader.load("textures/g-wood-block.jpg", () => render());
+
+        var mobileTextures = [];
+        mobileTextures[0] = loader.load("textures/2k_venus_atmosphere.jpg", () => render());
+        mobileTextures[1] = loader.load("textures/neptune.jpg", () => render());
+        mobileTextures[2] = loader.load("textures/2k_venus_surface.jpg", () => render());
+        mobileTextures[3] = loader.load("textures/2k_jupiter.jpg", () => render());
 
         var blockMaterials = {
-            zblock: new THREE.MeshBasicMaterial({
+            zblock: new THREE.MeshLambertMaterial({
                 color: new THREE.Color(0xffffff), // white
-                map: textures[0]
-            }), 
-            ablock: new THREE.MeshBasicMaterial({
-                color: new THREE.Color(0xffffff), // white
-                map: textures[1]
+                map: blockTextures[0]
             }),
-            gblock: new THREE.MeshBasicMaterial({
+            ablock: new THREE.MeshLambertMaterial({
                 color: new THREE.Color(0xffffff), // white
-                map: textures[2]
+                map: blockTextures[1]
+            }),
+            gblock: new THREE.MeshLambertMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: blockTextures[2]
             })
+        };
+
+        var mobileMaterials = {
+            north: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: mobileTextures[0],
+                shininess: 35,
+                specular: new THREE.Color(0xffffff)
+            }),
+            south: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: mobileTextures[1],
+                shininess: 35,
+                specular: new THREE.Color(0xffffff)
+            }),
+            east: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: mobileTextures[2],
+                shininess: 35,
+                specular: new THREE.Color(0xffffff)
+            }),
+            west: new THREE.MeshPhongMaterial({
+                color: new THREE.Color(0xffffff), // white
+                map: mobileTextures[3],
+                shininess: 35,
+                specular: new THREE.Color(0xffffff)
+            }),
+            frame: new THREE.MeshLambertMaterial({
+                color: new THREE.Color(0xCCCCCC)
+            }),
+            string: new THREE.LineBasicMaterial({ color: 0xffffff })
         };
 
         function setupCamera(cameraParameters) {
@@ -298,6 +348,11 @@
         toyBlocksRObj.position.y = groundHeight;
         toyBlocksRObj.position.x = 100;
         scene.add(toyBlocksRObj); // adding right toy blocks object to the scene
+
+        // Add Mobile
+        var mobile = createMobile();
+        mobile.position.y = mobileParams.mobileHeight;
+        scene.add(mobile);
 
         // rendering the scene!
         render();
@@ -700,57 +755,114 @@
             var toyBlocks = new THREE.Object3D();
             // first (bottom left) block -> Z
             var block1 = createBlock(blockMaterials.zblock);
-            block1.position.y = blockSize/2; // because origin of box is in center
-            block1.rotation.y = -Math.PI/12; // slightly rotating block to style/dimension
+            block1.position.y = blockSize / 2; // because origin of box is in center
+            block1.rotation.y = -Math.PI / 12; // slightly rotating block to style/dimension
             toyBlocks.add(block1);
 
             // second (top) block -> A
             var block2 = createBlock(blockMaterials.ablock);
-            block2.position.y = blockSize/2 + blockSize; // because putting on top of first block
-            block2.position.x = blockSize/2 + 2.5; // because placing block in middle of bottom blocks
-            block2.rotation.y = Math.PI/4; // rotating top block 45 degrees
+            block2.position.y = blockSize / 2 + blockSize; // because putting on top of first block
+            block2.position.x = blockSize / 2 + 2.5; // because placing block in middle of bottom blocks
+            block2.rotation.y = Math.PI / 4; // rotating top block 45 degrees
             toyBlocks.add(block2);
 
             // third (bottom right) block -> G
             var block3 = createBlock(blockMaterials.gblock);
-            block3.position.y = blockSize/2; // because origin of box is in center
+            block3.position.y = blockSize / 2; // because origin of box is in center
             block3.position.x = blockSize + 5; //because placing block to right of first block + little space
-            block3.rotation.y = Math.PI/8; // slightly rotating block to style/dimension
+            block3.rotation.y = Math.PI / 8; // slightly rotating block to style/dimension
             toyBlocks.add(block3);
-            
-            return {object: toyBlocks, blocks: [block1, block2, block3]};
+
+            return { object: toyBlocks, blocks: [block1, block2, block3] };
+        }
+
+        function createLine(x, y, z, material) {
+            geom = new THREE.Geometry();
+            geom.vertices.push(new THREE.Vector3(x, y, z));
+            geom.vertices.push(new THREE.Vector3(x, 0, z));
+
+            line = new THREE.Line(geom, material);
+            return line;
+        }
+
+        function createMobile() {
+            let mobileOffset = mobileParams.mobileWidth / 2;
+
+            var mobile = new THREE.Object3D();
+
+            var northPlanetGeom = new THREE.SphereGeometry(mobileParams.radiusNorth, 20, 20);
+            var northPlanet = new THREE.Mesh(northPlanetGeom, mobileMaterials.north);
+            northPlanet.position.set(0, -mobileParams.lengthNorth, mobileOffset);
+            mobile.add(northPlanet);
+
+            mobile.add(createLine(0, -mobileParams.lengthNorth, mobileOffset, mobileMaterials.string));
+
+            var southPlanetGeom = new THREE.SphereGeometry(mobileParams.radiusSouth, 20, 20);
+            var southPlanet = new THREE.Mesh(southPlanetGeom, mobileMaterials.south);
+            southPlanet.position.set(0, -mobileParams.lengthSouth, -mobileOffset);
+            mobile.add(southPlanet);
+
+            mobile.add(createLine(0, -mobileParams.lengthSouth, -mobileOffset, mobileMaterials.string));
+
+            var eastPlanetGeom = new THREE.SphereGeometry(mobileParams.radiusEast, 20, 20);
+            var eastPlanet = new THREE.Mesh(eastPlanetGeom, mobileMaterials.east);
+            eastPlanet.position.set(mobileOffset, -mobileParams.lengthEast, 0);
+            mobile.add(eastPlanet);
+
+            mobile.add(createLine(mobileOffset, -mobileParams.lengthEast, 0, mobileMaterials.string));
+
+            var westPlanetGeom = new THREE.SphereGeometry(mobileParams.radiusWest, 20, 20);
+            var westPlanet = new THREE.Mesh(westPlanetGeom, mobileMaterials.west);
+            westPlanet.position.set(-mobileOffset, -mobileParams.lengthWest, 0);
+            mobile.add(westPlanet);
+
+            mobile.add(createLine(-mobileOffset, -mobileParams.lengthWest, 0, mobileMaterials.string));
+
+            var frameGeom = new THREE.CylinderGeometry(2, 2, mobileParams.mobileWidth, 32);
+            var frame = new THREE.Mesh(frameGeom, mobileMaterials.frame);
+            var frame2 = frame.clone();
+
+            frame.rotateX(Math.PI / 2);
+            frame2.rotateZ(Math.PI / 2);
+
+            mobile.add(frame);
+            mobile.add(frame2);
+
+            return mobile;
         }
 
         var animationId = null;
 
-        function animateBlocks() {
+        function step() {
+            // animating the left side blocks
+            var b1 = toyBlocksL.blocks[0];
+            var b2 = toyBlocksL.blocks[1];
+            var b3 = toyBlocksL.blocks[2];
+
+            if (b1) b1.rotation.y += 0.01;
+            if (b2) b2.rotation.y += 0.015;
+            if (b3) b3.rotation.y += 0.02;
+
+            // animating the right side blocks
+            var b4 = toyBlocksR.blocks[0];
+            var b5 = toyBlocksR.blocks[1];
+            var b6 = toyBlocksR.blocks[2];
+
+            if (b4) b4.rotation.y -= 0.01;
+            if (b5) b5.rotation.y -= 0.015;
+            if (b6) b6.rotation.y -= 0.02;
+
+            mobile.rotateY(0.005);
+
+            render();
+
+            animationId = requestAnimationFrame(step);
+        }
+
+        function animate() {
             // animating the blocks so they rotate in place!
             // prevents stacking by exiting if an animation is already running
             if (animationId !== null) return;
-
-            function step() {
-                // animating the left side blocks
-                var b1 = toyBlocksL.blocks[0];
-                var b2 = toyBlocksL.blocks[1];
-                var b3 = toyBlocksL.blocks[2];
-
-                if (b1) b1.rotation.y += 0.01;
-                if (b2) b2.rotation.y += 0.015;
-                if (b3) b3.rotation.y += 0.02;
-
-                // animating the right side blocks
-                var b4 = toyBlocksR.blocks[0];
-                var b5 = toyBlocksR.blocks[1];
-                var b6 = toyBlocksR.blocks[2];
-
-                if (b4) b4.rotation.y -= 0.01;
-                if (b5) b5.rotation.y -= 0.015;
-                if (b6) b6.rotation.y -= 0.02;
-
-                render();
-
-                animationId = requestAnimationFrame(step);
-            }
 
             // Kick off the animation loop
             animationId = requestAnimationFrame(step);
@@ -767,8 +879,8 @@
 
         // g => starts the rotation of the blocks!!!
         // s => stops the rotation of the blocks!!!
-        document.addEventListener("keydown", function(event) {
-            if (event.key === "g") animateBlocks();
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "g") animate();
             if (event.key === "s") stopBlocksAnimation();
         });
 
