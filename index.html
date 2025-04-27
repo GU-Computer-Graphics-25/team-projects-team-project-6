@@ -900,16 +900,16 @@
             const path = new THREE.CurvePath();
             // points for first half of circle around ship
             const start = new THREE.Vector3(0, 0, 50); 
-            const end = new THREE.Vector3(0, 0, -100); 
-            const control1 = new THREE.Vector3(66.5, 0, 16.5); 
-            const control2 = new THREE.Vector3(66.5, 0, -83); 
+            const end = new THREE.Vector3(0, 0, -200); 
+            const control1 = new THREE.Vector3(133, 0, -33); 
+            const control2 = new THREE.Vector3(133, 0, -166); 
             // first curve
             const curve1 = new THREE.CubicBezierCurve3(
                 start, control1, control2, end
             );
             // points for second half of the circle
-            const control3 = new THREE.Vector3(-66.5, 0, -83); 
-            const control4 = new THREE.Vector3(-66.5, 0, 16.5); 
+            const control3 = new THREE.Vector3(-133, 0, -166); 
+            const control4 = new THREE.Vector3(-133, 0, -33); 
             // second curve
             const curve2 = new THREE.CubicBezierCurve3(
                 end, control3, control4, start
