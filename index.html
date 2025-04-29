@@ -29,14 +29,19 @@
 
     <!-- <script type="module" src="/aliens.js"></script> -->
     <script>
-        // global variables    
-        // Note: enabling orbit controls interferes with camera setup    
-        var enableOrbitControls = false;
+        // global variables      
+        var enableOrbitControls = true;
 
         var groundHeight = -5 + 0.02;
 
         var blockSize = 20;
         var animationId; // used later for animation
+
+        var alienAnimating = false; // variables for the alien circling animation
+        var animationPath = null;
+        var animationTime = 0;
+        var animationDuration = 10; // seconds to complete one circuit
+        var alienOriginalPositions = [];
 
         var alienParams = {
             bodyRadius: 15,
@@ -777,6 +782,7 @@
         }
 
         function createLine(x, y, z, material) {
+            // this function creates a line between two points (used in the mobile creation)
             geom = new THREE.Geometry();
             geom.vertices.push(new THREE.Vector3(x, y, z));
             geom.vertices.push(new THREE.Vector3(x, 0, z));
@@ -786,6 +792,7 @@
         }
 
         function createMobile() {
+            // this function creates the planet mobile
             let mobileOffset = mobileParams.mobileWidth / 2;
 
             var mobile = new THREE.Object3D();
@@ -852,7 +859,13 @@
             if (b5) b5.rotation.y -= 0.015;
             if (b6) b6.rotation.y -= 0.02;
 
+            // animating the mobile
             mobile.rotateY(0.005);
+
+            // alien animation
+            if (alienAnimating) {
+                animateAliens();
+            }
 
             render();
 
@@ -860,28 +873,144 @@
         }
 
         function animate() {
-            // animating the blocks so they rotate in place!
+            // starts animation of blocks and alien
             // prevents stacking by exiting if an animation is already running
             if (animationId !== null) return;
+
+            // starts alien animation
+            startAlienAnimation();
 
             // Kick off the animation loop
             animationId = requestAnimationFrame(step);
         }
 
-
-        function stopBlocksAnimation() {
-            // stops the rotation animation of the blocks
+        function stopAllAnimation() {
+            // stops the rotation animation of the blocks and aliens
             if (animationId) {
                 cancelAnimationFrame(animationId);
                 animationId = null;
             }
+
+            // stops alien animation and reset positions
+            stopAlienAnimation();
         }
 
-        // g => starts the rotation of the blocks!!!
-        // s => stops the rotation of the blocks!!!
+        function createCircularPath() {
+            // this function creates a circular path using two Bezier curves
+            const path = new THREE.CurvePath();
+            // points for first half of circle around ship
+            const start = new THREE.Vector3(0, 0, 50); 
+            const end = new THREE.Vector3(0, 0, -200); 
+            const control1 = new THREE.Vector3(133, 0, -33); 
+            const control2 = new THREE.Vector3(133, 0, -166); 
+            // first curve
+            const curve1 = new THREE.CubicBezierCurve3(
+                start, control1, control2, end
+            );
+            // points for second half of the circle
+            const control3 = new THREE.Vector3(-133, 0, -166); 
+            const control4 = new THREE.Vector3(-133, 0, -33); 
+            // second curve
+            const curve2 = new THREE.CubicBezierCurve3(
+                end, control3, control4, start
+            );
+
+            path.add(curve1);
+            path.add(curve2);
+            return path;
+        }
+
+        function initAlienAnimation() {
+            // starting alien animation
+            // storing original positions of the aliens
+            alienOriginalPositions = [
+                alien.position.clone(),
+                alien2.position.clone(),
+                alien3.position.clone()
+            ];
+            
+            // creating animation path if not already created
+            if (!animationPath) {
+                animationPath = createCircularPath();
+            }
+        }
+
+        function animateAliens() {
+            // this function progresses the aliens in the circular animation path
+            // and updates the alien's orientation
+            if (!alienAnimating) return;
+            
+            animationTime += 0.01;
+            const progress = (animationTime % animationDuration) / animationDuration;
+            // get position along path
+            const position = animationPath.getPoint(progress);
+            // calculate next position for orientation
+            const lookAhead = 0.01;
+            const nextProgress = ((animationTime + lookAhead) % animationDuration) / animationDuration;
+            const nextPosition = animationPath.getPoint(nextProgress);
+            // calculate direction vector
+            const direction = new THREE.Vector3().subVectors(nextPosition, position).normalize();
+            // update each alien position with different offsets
+            updateAlienPosition(alien, position, direction, 0);
+            updateAlienPosition(alien2, position, direction, Math.PI * 2/3); // 120° offset
+            updateAlienPosition(alien3, position, direction, Math.PI * 4/3); // 240° offset
+            
+            render();
+        }
+
+        function updateAlienPosition(alienObj, basePosition, direction, offset) {
+            // this helper function updates the alien's position based on the calculates position, direction, and offset
+            // calculate offset position (aliens spaced around circle)
+            const radius = 50; // radius of the circular path
+            const offsetX = radius * Math.cos(2 * Math.PI * (animationTime / animationDuration) + offset);
+            const offsetZ = radius * Math.sin(2 * Math.PI * (animationTime / animationDuration) + offset);
+            // update alien position
+            alienObj.position.x = basePosition.x + offsetX;
+            alienObj.position.z = basePosition.z + offsetZ;
+            // make alien face direction of movement
+            if (direction.length() > 0.01) {
+                const lookAtPoint = new THREE.Vector3().addVectors(
+                    new THREE.Vector3(alienObj.position.x, alienObj.position.y, alienObj.position.z),
+                    direction
+                );
+                alienObj.lookAt(lookAtPoint);
+                // keep aliens upright
+                alienObj.rotation.x = 0;
+                alienObj.rotation.z = 0;
+            }
+        }
+
+        function startAlienAnimation() {
+            // this function starts alien animation (runs when "g" pressed)
+            if (!alienAnimating) {
+                initAlienAnimation();
+                animationTime = 0;
+                alienAnimating = true;
+            }
+        }
+
+        function stopAlienAnimation() {
+            // this function stops alien animation (runs when "s" pressed)
+            if (alienAnimating) {
+                alienAnimating = false;
+                // reset aliens to their original positions and orientations
+                alien.position.copy(alienOriginalPositions[0]);
+                alien2.position.copy(alienOriginalPositions[1]);
+                alien3.position.copy(alienOriginalPositions[2]);
+                // reset rotations
+                alien.rotation.set(0, 0, 0);
+                alien2.rotation.set(0, 0, 0);
+                alien3.rotation.set(0, 0, 0);
+                
+                render();
+            }
+        }
+
+        // g => starts the animation (blocks and planets)!!!
+        // s => stops the animation (blocks and planets)!!!
         document.addEventListener("keydown", function (event) {
             if (event.key === "g") animate();
-            if (event.key === "s") stopBlocksAnimation();
+            if (event.key === "s") stopAllAnimation();
         });
 
 
