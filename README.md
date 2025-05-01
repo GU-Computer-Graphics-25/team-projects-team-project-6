@@ -45,8 +45,14 @@ The following are features that are demonstrated in this project scene:
 ## Resources Used and/or Referenced
 The following were used in some manner to create the project scene.
 - [Three.js documentation and examples](https://threejs.org/docs/index.html)
-    - note any specific relevant information on how this was explicitly used in your project
 - [Learn Three.js - Fourth Edition](https://www.packtpub.com/product/learn-threejs-fourth-edition/9781803233871)
-    - note any specific relevant information on how this was explicitly used in your project
-- [Traffic Run Game](https://codepen.io/HunorMarton/pen/ExNzWqm)
-    - Some random example - used ABC, motivated by XYZ - note any specific relevant information on how this was explicitly used in your project
+- [HW1: aster-isk]([https://codepen.io/HunorMarton/pen/ExNzWqm](https://github.com/GU-Computer-Graphics-25/homework-1-the-basics-aster-isk/blob/f39781d3a720edcb2546e979783d9deacdb2d4ee/cookiejar.js#L30))
+  - Used code for generating a radially semmetric object out of a bezier curve, also generated from given points, to create rocket ship object.
+- [Solar System Scope](https://www.solarsystemscope.com/textures/)
+  - Used for the texturing mobile planets.
+- [Freepik](https://www.freepik.com/premium-photo/letter-wodden-childrens-toy-alphabet-block-3d-rendering_24724160.htm)
+  - 'A' block texture.
+- [iStock Photo](https://www.istockphoto.com/vector/3d-red-letter-block-z-gm484316602-71610755?searchscope=image%2Cfilm)
+  - 'Z' block texture.
+- [Almay](https://www.alamy.com/stock-photo-g-block-23395884.html?imageid=0764F820-293C-4102-966E-FA1C1F0B48A3&p=3159&pn=1&searchId=7b17246d34943faccdfaa897487c1a1c&searchtype=0)
+  - 'G' block texture. 
